@@ -1,0 +1,10 @@
+FROM alpine:latest
+MAINTAINER minhpq331@gmail.com
+
+WORKDIR /app/bin
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+COPY --from=builder /app/dist/server /app/bin/server
+
+CMD ["/app/bin/server"]

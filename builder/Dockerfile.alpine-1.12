@@ -1,0 +1,23 @@
+FROM golang:1.12-alpine as builder
+MAINTAINER minhpq331@gmail.com
+
+WORKDIR /app
+
+RUN apk add --no-cache --update bash git gcc musl-dev ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Add the keys
+ONBUILD ARG REGISTRY_ID
+ONBUILD ENV REGISTRY_ID=$REGISTRY_ID
+ONBUILD ARG REGISTRY_TOKEN
+ONBUILD ENV REGISTRY_TOKEN=$REGISTRY_TOKEN
+
+ONBUILD RUN git config \
+  --global \
+  url."https://${REGISTRY_ID}:${REGISTRY_TOKEN}@${REGISTRY_HOST}".insteadOf \
+  "https://${REGISTRY_HOST}"
+
+ONBUILD ADD ./go.mod ./go.sum /app/
+ONBUILD RUN go mod download
+ONBUILD ADD . /app
+ONBUILD RUN go build -o /app/dist/server cmd/server/*.go
